@@ -10,6 +10,8 @@ This repository provides a Docker setup for EasyBot.
 
 Docker 镜像已经上传至 DockerHub，镜像名称为 `wlingxd/easybot`，标签为 `latest`。
 
+[DockerHub](https://hub.docker.com/repository/docker/wlingxd/easybot/general)
+
 ## 快速开始
 
 以下是一些常用的 Docker 命令来运行 EasyBot：
