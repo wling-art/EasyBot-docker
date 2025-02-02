@@ -1,0 +1,10 @@
+services:
+  easybot:
+    image: wlingXD/easybot:latest
+    container_name: easybot
+    restart: always
+    volumes:
+      - ./EasyBot:/data
+    ports:
+      - "5000:5000"
+      - "26990:26990"
