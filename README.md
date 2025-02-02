@@ -31,7 +31,6 @@ docker run -d \
   --name easybot \
   --restart always \
   -v $(pwd)/EasyBot:/data \
-  -v $(pwd)/tmpl1:/tmp \
   -p 5000:5000 \
   -p 26990:26990 \
   wlingxd/easybot:latest
