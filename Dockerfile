@@ -1,47 +1,38 @@
-FROM debian:12-slim
+ARG TARGETPLATFORM=linux/amd64
+FROM --platform=${TARGETPLATFORM} debian:12-slim AS builder
 
-RUN apt-get update && apt-get install -y --no-install-recommends tzdata && \
-    ln -fs /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
-    dpkg-reconfigure -f noninteractive tzdata
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    wget \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    curl \
+    jq \
     unzip \
-    libnss3 \
-    libgdiplus \
-    libgtk-3-0 \
-    libdrm2 \
-    libgbm1 \
-    libasound2 \
-    ca-certificates \
-    && wget https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb -O packages-microsoft-prod.deb \
-    && dpkg -i packages-microsoft-prod.deb \
-    && rm packages-microsoft-prod.deb \
-    && apt-get update && apt-get install -y --no-install-recommends \
-    dotnet-sdk-8.0 \
-    aspnetcore-runtime-8.0 \
-    python3 \
-    python3-pip \
-    python3-venv \
-    && python3 -m venv /app/EasyBot/venv \
-    && /app/EasyBot/venv/bin/pip install requests \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    ca-certificates && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app/EasyBot
 
-COPY get_url.py .
+COPY get_url.sh .
 
-RUN /app/EasyBot/venv/bin/python3 get_url.py > download.url && \
-    wget -q $(cat download.url) -O app.zip && \
-    unzip -o app.zip -d /app/EasyBot && \
-    rm -rf app.zip download.url get_url.py venv \
-    && chmod +x /app/EasyBot/EasyBot
+RUN chmod +x get_url.sh && \
+    download_url=$(./get_url.sh) && \
+    echo "🔗 下载URL: $download_url" && \
+    curl -#SLo app.zip "$download_url" && \
+    unzip -o app.zip && \
+    rm -f app.zip get_url.sh && \
+    chmod +x EasyBot
 
+FROM --platform=${TARGETPLATFORM} mcr.microsoft.com/dotnet/aspnet:8.0-jammy AS runtime
 
-# 复制启动脚本
+WORKDIR /app/EasyBot
+
+RUN ln -fs /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
+    dpkg-reconfigure -f noninteractive tzdata && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /app/EasyBot /app/EasyBot
 COPY entrypoint.sh /app/EasyBot/entrypoint.sh
 
-WORKDIR /data
+RUN chmod +x /app/EasyBot/*
 
-# 使用 sh 启动程序
 ENTRYPOINT ["/bin/sh", "/app/EasyBot/entrypoint.sh"]

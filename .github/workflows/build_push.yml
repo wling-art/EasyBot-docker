@@ -13,18 +13,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
-
-      - name: Install dependencies
-        run: pip install requests
-
       - name: Get latest URL
         id: get_url
         run: |
-          latest_url=$(python get_url.py)
+          latest_url=$(bash get_url.sh)
           echo "::set-output name=latest_url::$latest_url"
 
       - name: Calculate hash
