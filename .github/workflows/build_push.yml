@@ -57,9 +57,10 @@ jobs:
           fi
 
       - name: Set up Docker Buildx
+        if: steps.compare_hash.outputs.skip_build == 'false'
         uses: docker/setup-buildx-action@v3
-
       - name: Cache Docker layers
+        if: steps.compare_hash.outputs.skip_build == 'false'
         uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
@@ -92,6 +93,7 @@ jobs:
           echo "${{ steps.calculate_hash.outputs.hash }}" > version
 
       - name: Submit Changes
+        if: steps.compare_hash.outputs.skip_build == 'false'
         uses: EndBug/add-and-commit@v9
         with:
           default_author: github_actions
